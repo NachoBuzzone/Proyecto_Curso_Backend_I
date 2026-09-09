@@ -1,4 +1,4 @@
-import {readFileSync,writeFileSync} from 'node:fs';
+import fs from 'node:fs/promises';
 
 export class ServiceManager{
     constructor(filePath){
@@ -6,21 +6,28 @@ export class ServiceManager{
     }
 
     //Devuelve todos los servicios.
-    getServices(){
-        const data = readFileSync(this.path, 'utf-8');
-        return JSON.parse(data);
+    async getServices(){
+        try{
+            const data = await fs.readFile(this.path, 'utf-8');
+            return JSON.parse(data);
+        }catch(error){
+            if (error.code === 'ENOENT' || error instanceof SyntaxError) {
+                return [];
+            }
+            throw error;
+        }
     }
 
     //Devuelve el servicio o null/mensaje de error.
-    getServiceById(id) {
-        const data = this.getServices();
+    async getServiceById(id) {
+        const data = await this.getServices();
         const service = data.find(servicio => servicio.id == id);
         return service || null;
     }
 
     //Agrega un servicio; El id se genera automáticamente (no se recibe como parámetro); Valida que estén presentes: name, description, duration, price, category, available; rechaza servicios incompletos
-    addService(serviceData){
-        const data = this.getServices()
+    async addService(serviceData){
+        const data = await this.getServices()
         const newID = data.length > 0 ? data[data.length - 1].id + 1 : 1
         const newService = {
             "id": newID,
@@ -36,31 +43,31 @@ export class ServiceManager{
         }
 
         data.push(newService);
-        writeFileSync(this.path, JSON.stringify(data, null, 2), 'utf-8');
+        await fs.writeFile(this.path, JSON.stringify(data, null, 2), 'utf-8');
         return newService;
     }
 
     //Actualiza el servicio; No permite modificar el id; Devuelve null/error si no existe
-    updateService(id, updatedData){
-        const data = this.getServices();
+    async updateService(id, updatedData){
+        const data = await this.getServices();
         const serviceToUpdate = data.find(servicio => servicio.id == id);
         if (!serviceToUpdate){
             return {error: 'Service not found.'}
         }
         Object.assign(serviceToUpdate,updatedData);
         serviceToUpdate.id = Number(id);
-        writeFileSync(this.path, JSON.stringify(data, null, 2), 'utf-8');
+        await fs.writeFile(this.path, JSON.stringify(data, null, 2), 'utf-8');
         return serviceToUpdate;
     }
 
     //Elimina el servicio; Devuelve null/error si no existe
-    deleteService(id){
-        const data = this.getServices();
+    async deleteService(id){
+        const data = await this.getServices();
         const restOfServices = data.filter(servicio => servicio.id != id);
         if (data.length == restOfServices.length){
             return { error: 'Service not found.'}
         }
-        writeFileSync(this.path, JSON.stringify(restOfServices, null, 2), 'utf-8');
+        await fs.writeFile(this.path, JSON.stringify(restOfServices, null, 2), 'utf-8');
         return { message: `Servicio con id:${id} eliminado correctamente`};
     }
 

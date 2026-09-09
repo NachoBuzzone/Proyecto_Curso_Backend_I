@@ -1,6 +1,6 @@
-# Pre-entrega 2.
+# Pre-entrega 3.
 
-The goal of this installment is to build a REST API using Express that exposes endpoints for managing the “services” resource, connecting the routes to the ServiceManager from the previous installment.
+The goal of this installment is to build a REST API using Node.js, Express, and FileSystem that manages two resources—services and reservations—with persistence in JSON files.
 
 # To run it.
 
@@ -20,6 +20,13 @@ The goal of this installment is to build a REST API using Express that exposes e
 4. updateService. Update a service.
 5. deleteService. Delete a service.
 
+# Explanation of the methods of the Booking Manager class.
+
+1. getBookings. Gets all the bookings.
+2. getBookingById. Get the booking with a specific ID.
+3. createBooking. Create a booking.
+4. addServiceToBooking. Add a service to booking.
+
 # Environment variables.
 
 1. PORT --> port on which the server is running
@@ -31,4 +38,28 @@ The goal of this installment is to build a REST API using Express that exposes e
 2. GET /api/services/:sid .Is used to get the service with a specific ID.
 3. POST /api/services .Is used to add a service.
 4. PUT /api/services/:sid .Is used to update a service.
-5. DELETE /api/services/:sid .Is used to delete a service
+5. DELETE /api/services/:sid .Is used to delete a service.
+6. GET /api/bookings/:bid .Is used to access all services.
+7. POST	/api/bookings .Is used to create a booking. Supports to create a booking with services empty.
+8. POST /api/bookings/:bid/services/:sid  .Is used to add a service to booking exists, verifying that both exist.
+
+
+# Example to create a booking.
+
+```
+import { BookingManager } from './src/managers/BookingManager.js';
+const bookingManager = new BookingManager('./src/data/bookings.json');
+
+
+await bookingManager.createBooking({
+    clientName: 'Martin',
+    clientEmail: 'Martin@gmail.com',
+    date: '10-10-2026',
+    time: '20 minutos',
+    status: 'pending',
+    services: [{ service: 1, quantity: 1 }]
+  });
+
+  const bookings = await bookingManager.getBookings();
+  console.log(bookings);
+```
