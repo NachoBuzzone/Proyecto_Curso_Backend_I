@@ -1,6 +1,6 @@
-# Pre-entrega 3.
+# Pre-entrega 4.
 
-The goal of this installment is to build a REST API using Node.js, Express, and FileSystem that manages two resources—services and reservations—with persistence in JSON files.
+The goal of this release is to reorganize the existing API by separating responsibilities into three layers: routes, controllers, and managers. No new endpoints are being added.
 
 # To run it.
 
@@ -27,6 +27,19 @@ The goal of this installment is to build a REST API using Node.js, Express, and 
 3. createBooking. Create a booking.
 4. addServiceToBooking. Add a service to booking.
 
+# Explanation of the methods of the Controller Bookings class.
+1. getAllBookings. Use the Bookings Manager feature to view all bookings.
+2. getBooking. Use the Bookings Manager feature to retrieve a specific booking.
+3. createBooking. Use the Bookings Manager feature to create a booking. 
+4. addServiceToAnExistingBooking. Use the Bookings Manager feature to add a service to a booking.
+
+# Explanation of the methods of the Controller Services class.
+1. getAllServices. Use the Service Manager feature to view all services.
+2. getService.  Use the Service Manager feature to request a specific service.
+3. createService.  Use the Service Manager feature to create a Service. 
+4. updateService.  Use the Service Manager feature to update a Service. 
+5. removeService. Use the Service Manager feature to delete a Service. 
+
 # Environment variables.
 
 1. PORT --> port on which the server is running
@@ -39,9 +52,10 @@ The goal of this installment is to build a REST API using Node.js, Express, and 
 3. POST /api/services .Is used to add a service.
 4. PUT /api/services/:sid .Is used to update a service.
 5. DELETE /api/services/:sid .Is used to delete a service.
-6. GET /api/bookings/:bid .Is used to access all services.
-7. POST	/api/bookings .Is used to create a booking. Supports to create a booking with services empty.
-8. POST /api/bookings/:bid/services/:sid  .Is used to add a service to booking exists, verifying that both exist.
+6. GET /api/bookings .Is used to get all bookings.
+7. GET /api/bookings/:bid .Is used to get the booking with a specific ID.
+8. POST	/api/bookings .Is used to create a booking. Supports to create a booking with services empty.
+9. POST /api/bookings/:bid/services/:sid  .Is used to add a service to booking exists, verifying that both exist.
 
 
 # Example to create a booking.

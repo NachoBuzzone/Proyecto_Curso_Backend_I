@@ -15,44 +15,50 @@ export class BookingManager{
                 return [];
             }
             throw error;
-        }
-    }
+        };
+    };
 
     //Devuelve el booking o null/mensaje de error.
     async getBookingById(id) {
         const data = await this.getBookings();
         const booking = data.find(booking => booking.id === Number(id));
-        return booking || null;
-    }
+        if (!booking) {
+            return {error: 'Booking not found.'};
+        };
+        return booking;
+    };
 
     //Agrega un servicio; El id se genera automáticamente (no se recibe como parámetro); Valida que estén presentes: clientName, clientEmail, date, time, status, services: []; rechaza servicios incompletos
     async createBooking(bookingData){
+
+        const { clientName, clientEmail, date, time, status, services} = bookingData;
+        if ( !clientName || !clientEmail || !date || !time || !status){
+            return {error: "The booking you want to add is incomplete."}
+        };
+
         const data = await this.getBookings()
         const newID = data.length > 0 ? data[data.length - 1].id + 1 : 1
         const newBooking = {
             "id": newID,
-            "clientName": bookingData.clientName,
-            "clientEmail":bookingData.clientEmail,
-            "date": bookingData.date,
-            "time": bookingData.time,
-            "status": bookingData.status,
-            "services": bookingData.services,
-        }
-        if ( !newBooking.clientName || !newBooking.clientEmail || !newBooking.date || !newBooking.time || !newBooking.status){
-            return "The booking you want to add is incomplete."
-        }
-
+            "clientName": clientName,
+            "clientEmail":clientEmail,
+            "date": date,
+            "time": time,
+            "status": status,
+            "services": services || [],
+        };
+      
         data.push(newBooking);
         await fs.writeFile(this.path, JSON.stringify(data, null, 2), 'utf-8');
         return newBooking;
-    }
+    };
 
     async addServiceToBooking(bid, sid) {
         const bookings = await this.getBookings();
         const bookingIndex = bookings.findIndex(b => b.id === Number(bid));
 
         if (bookingIndex === -1) {
-            return null; // o { error: 'Booking not found.' }
+            return {error: 'Booking not found.'};
         }
 
         const booking = bookings[bookingIndex];
@@ -65,11 +71,11 @@ export class BookingManager{
                 service: Number(sid),
                 quantity: 1
             });
-        }
+        };
 
         await fs.writeFile(this.path, JSON.stringify(bookings, null, 2));
         return booking;
-    }
+    };
 }
 
 
