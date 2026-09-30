@@ -1,11 +1,10 @@
 import express from 'express'
-import { ControllerServices } from '../controllers/services.controller.js';
+import * as controllerServices from '../controllers/services.controller.js';
 
 export const servicesRouter = express.Router();
-export const controllerServices = new ControllerServices();
 
-servicesRouter.get('/', controllerServices.getAllServices);
-servicesRouter.get('/:sid', controllerServices.getService);
+servicesRouter.get('/', controllerServices.getServices);
+servicesRouter.get('/:sid', controllerServices.getServiceById);
 servicesRouter.post('/', controllerServices.createService);
 servicesRouter.put('/:sid', controllerServices.updateService);
-servicesRouter.delete('/:sid', controllerServices.removeService);
+servicesRouter.delete('/:sid', controllerServices.deleteService);
