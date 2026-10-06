@@ -1,6 +1,6 @@
-# Pre-entrega 5 - Layered Architecture, DAO & Repository Refactor
+# Pre-entrega 6 - Migration to MongoDB Atlas with Mongoose
 
-The main goal of this release is to refactor the existing codebase into a  Layered Architecture (Routes → Controllers → Services → Repositories → DAOs) to decouple business logic from FileSystem persistence, preparing the system for seamless database migrations (such as MongoDB Atlas) without affecting external endpoint behavior.
+The primary objective of this release is to migrate data persistence from local JSON files (`FileSystem`) to MongoDB Atlas using Mongoose as the Object Data Modeling (ODM) library. The system preserves the layered architecture (Routes → Controllers → Services → Repositories → DAOs → Models).
 
 ## Running the Server
 
@@ -17,9 +17,16 @@ The main goal of this release is to refactor the existing codebase into a  Layer
 ## Layer Responsibilities
 - **Routes (`src/routes/`):** Define API endpoints and HTTP verbs, delegating execution directly to controllers without handling business logic.
 - **Controllers (`src/controllers/`):** Manage HTTP requests and responses. Extract inputs (`req.params`, `req.query`, `req.body`), invoke the corresponding service functions, and return standardized JSON responses (`200`, `201`, `400`, `404`, `500`).
-- **Services (`src/services/`):** Encapsulate all core business rules and data validations (e.g., verifying entity existence, auto-incrementing IDs, checking required fields, and updating service quantities). Services are completely agnostic of Express (`req`/`res`).
+- **Services (`src/services/`):** Encapsulate all core business rules and data validations (verifying entity existence, checking required fields, and updating service quantities). Services are completely agnostic of Express (`req`/`res`).
 - **Repositories (`src/repositories/`):** Provide an abstraction layer over data access, exposing domain-level methods without containing business rules.
-- **DAOs (`src/dao/`):** Handle raw input/output operations directly against the persistent storage (`data/services.json` and `data/bookings.json`) using `node:fs/promises`.
+- **DAOs (`src/dao/`):** Perform raw database operations directly against MongoDB Atlas collections using Mongoose models (`find`, `findById`, `create`, `findByIdAndUpdate`, `findByIdAndDelete`), replacing legacy FileSystem operations.
+- **Models (`src/models/`):** Define Mongoose schemas, data types, required constraints, and relationships.
+
+## Mongoose Models
+
+1. **`service.model.js` (`Service`):** Represents catalog services with `name` (String), `description` (String), `duration` (Number), `price` (Number), `category` (String), and `available` (Boolean).
+2. **`booking.model.js` (`Booking`):** Stores customer bookings including `clientName`, `clientEmail`, `date`, `time`, and `status` (`pending` | `confirmed` | `cancelled`). References services via `Schema.Types.ObjectId` targeting the `Service` model along with a `quantity` counter.
+3. **`message.model.js` (`Message`):** Defines real-time or stored notifications/messages containing `user`, `message`, and automatic timestamps.
 
 ## Explanation of the functions of the Controller Bookings
 1. getAllBookings. Retrieves all bookings via bookingsService.
@@ -38,6 +45,7 @@ The main goal of this release is to refactor the existing codebase into a  Layer
 
 1. PORT --> port on which the server is running.
 2. NODE_ENV --> Environment: development | test | production.
+3. MONGO_URI --> MongoDB Atlas connection string URI (including credentials, cluster address, and database name).
 
 ## Endpoints
 
@@ -52,9 +60,9 @@ The main goal of this release is to refactor the existing codebase into a  Layer
 9. POST /api/bookings/:bid/services/:sid  .Is used to add a service to an existing booking, verifying that both exist.
 
 ## Architectural Notes
-- **bookings.service.js:** Enforces business logic. Validates that both the booking and service exist (querying services.repository.js) and increments the service quantity if it is already present in the booking.
-- **services.service.js:** Enforces numeric validation for price and duration, auto-generates IDs, and applies filtering (category, available).
-- **Repositories & DAOs:** Handle persistent operations on bookings.json and services.json (getAll, getById, create, update, delete).
+* **`bookings.service.js`:** Enforces domain logic. Validates that both the booking and service exist (querying repository methods) and increments the service quantity if it is already present in the booking. ID comparisons are handled as strings to maintain compatibility with `ObjectId`.
+* **`services.service.js`:** Enforces numeric validation for price and duration, delegates unique ID generation to MongoDB (`_id`), and applies query filters (`category`, `available`).
+* **Repositories & DAOs:** Handle persistence exclusively on MongoDB Atlas collections (`services` and `bookings`) using Mongoose queries and `.lean()` for performance.
 
 ## Example to create a booking
 
@@ -70,7 +78,7 @@ Request body:
   "status": "pending",
   "services": [
     {
-      "service": 1,
+      "service": "660c1d2e4f1a2b3c4d5e6f7a",
       "quantity": 1
     }
   ]

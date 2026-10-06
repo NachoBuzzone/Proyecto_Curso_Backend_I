@@ -11,7 +11,7 @@ export async function getServices(filters = {}) {
     };
 
     if(available !== undefined){
-        const availableBool = available === 'true';
+        const availableBool = available === true || available === 'true';
         filteredServices = filteredServices.filter((service)=> service.available === availableBool)
     };
 
@@ -20,7 +20,7 @@ export async function getServices(filters = {}) {
 
 
 export async function getServiceById(id) {
-    const service = await servicesRepositories.getById(Number(id));
+    const service = await servicesRepositories.getById(id);
     if (!service){
         return { error: 'Service not found.' };
     };
@@ -40,11 +40,8 @@ export async function createService(serviceData){
     if ( !Number.isFinite(numericDuration) || !Number.isFinite(numericPrice) ){
         return {error: 'Duration and price must be valid numbers.'}
     };
-        
-    const data = await servicesRepositories.getAll();
-    const newID = data.length > 0 ? data[data.length - 1].id + 1 : 1
+
     const newService = {
-        "id": newID,
         "name": name,
         "description":description,
         "duration": numericDuration,
@@ -58,7 +55,7 @@ export async function createService(serviceData){
 export async function updateService(id, updatedData){
     const dataToUpdate = { ...updatedData };
     delete dataToUpdate.id;
-    const updated = await servicesRepositories.update(Number(id), dataToUpdate);
+    const updated = await servicesRepositories.update(id, dataToUpdate);
     if (!updated){
         return { error: 'Service not found.' }; 
     }
@@ -66,7 +63,7 @@ export async function updateService(id, updatedData){
 };
 
 export async function deleteService(id){
-    const deleted = await servicesRepositories.remove(Number(id));
+    const deleted = await servicesRepositories.remove(id);
     if (!deleted){
         return { error: 'Service not found.' };
     };

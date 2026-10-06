@@ -6,7 +6,7 @@ export async function getBookings(){
 }   
 
 export async function getBookingById(id){
-    const booking = await bookingsRepositories.getById(Number(id));
+    const booking = await bookingsRepositories.getById(id);
     if (!booking) {
         return { error: 'Booking not found.' };
     }
@@ -16,13 +16,11 @@ export async function getBookingById(id){
 export async function createBooking(bookingData){
     const { clientName, clientEmail, date, time, status, services } = bookingData;
 
-    if ( !clientName || !clientEmail || !date || !time || !status ){
+    if ( !clientName || !clientEmail || !date || !time ){
         return { error: 'The booking you want to add is incomplete.' }
     };
-    const data = await bookingsRepositories.getAll();
-    const newID = data.length > 0 ? data[data.length - 1].id + 1 : 1
+
     const newBooking = {
-        id: newID,
         clientName,
         clientEmail,
         date,
@@ -34,8 +32,8 @@ export async function createBooking(bookingData){
 }
 
 export async function addServiceToBooking(bid, sid){
-    const bookingId = Number(bid);
-    const serviceId = Number(sid);
+    const bookingId = bid;
+    const serviceId = sid;
 
     const booking = await bookingsRepositories.getById(bookingId);
     if (!booking) {
@@ -47,7 +45,10 @@ export async function addServiceToBooking(bid, sid){
         return { error: 'Service not found.' };
     };
 
-    const serviceIndex = booking.services.findIndex(s => s.service === serviceId);
+    const serviceIndex = booking.services.findIndex(s => {
+        const currentServiceId = s.service?._id ? s.service._id.toString() : s.service?.toString();
+        return currentServiceId === serviceId.toString();
+    });
     if (serviceIndex !== -1) {
         booking.services[serviceIndex].quantity += 1;
     } else {
@@ -55,6 +56,9 @@ export async function addServiceToBooking(bid, sid){
             service: serviceId,
             quantity: 1
         });
-    }
-    return await bookingsRepositories.update(bookingId, booking);
+    };
+    
+    const dataToUpdate = { ...booking };
+    delete dataToUpdate._id;
+    return await bookingsRepositories.update(bookingId, dataToUpdate);
 };

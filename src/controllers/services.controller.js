@@ -1,6 +1,5 @@
 import * as servicesService from '../services/services.service.js';
 
-
 export async function getServices(req, res){
     try{
         const payload = await servicesService.getServices(req.query);
@@ -41,7 +40,6 @@ export async function getServiceById(req, res) {
     };
 };
 
-
 export async function createService(req, res) {
     try{
         const newService = await servicesService.createService(req.body);
@@ -65,7 +63,6 @@ export async function createService(req, res) {
         })
     };
 };
-
 
 export async function updateService(req, res) {
     try{

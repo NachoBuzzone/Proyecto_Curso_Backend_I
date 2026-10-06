@@ -11,7 +11,7 @@ export async function getAllBookings(req, res){
     }catch(error){
         return res.status(500).json({
             status:'Error',
-            payload:'Error to get bookings'    
+            message:'Error to get bookings'    
         })
     };
 };
@@ -19,7 +19,7 @@ export async function getAllBookings(req, res){
 export async function getBookingById(req, res){
     try{
         const { bid } = req.params;
-        const foundBooking = await bookingsService.getBookingById(Number(bid));
+        const foundBooking = await bookingsService.getBookingById(bid);
 
         if (foundBooking.error){
             return res.status(404).json({
@@ -66,7 +66,7 @@ export async function addServiceToBooking(req, res){
     try{
         const { bid,sid } = req.params;
 
-        const result = await bookingsService.addServiceToBooking(Number(bid), Number(sid));
+        const result = await bookingsService.addServiceToBooking(bid, sid);
 
         if (result.error){
             return res.status(404).json({

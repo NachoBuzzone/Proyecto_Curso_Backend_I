@@ -1,45 +1,46 @@
-import fs from 'node:fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const FILE_PATH = path.join(__dirname,'../data/bookings.json');
+import Booking from "../models/booking.model.js"
 
 export async function getAll(){
     try{
-        const data = await fs.readFile(FILE_PATH, 'utf-8');
-        return JSON.parse(data);
-    }catch(error){
-        if (error.code === 'ENOENT' || error instanceof SyntaxError) {
-            return [];
+        const bookings = await Booking.find().lean();
+        return bookings;
+    } catch (error) {
+        console.error('Error al obtener bookings de MongoDB:', error);
+        throw error;
+    }
+};
+
+export async function getById(id, { populate = false } = {}) {
+    try {
+        let query = Booking.findById(id);
+
+        if (populate){
+            query = query.populate("services.service")
         }
+        const booking = await query.lean();
+        return booking || null;
+    } catch (error) {
+        console.error('Error al buscar un booking por ID en MongoDB:', error);
         throw error;
     };
 };
 
-export async function getById(id) {
-    const bookings = await getAll();
-    const booking = bookings.find(booking => booking.id === Number(id));
-    return booking || null;
-};
-
 export async function create(bookingData){
-    const bookings = await getAll();
-    bookings.push(bookingData);
-    await fs.writeFile(FILE_PATH, JSON.stringify(bookings, null, 2), 'utf-8');
-    return bookingData;
+    try {
+        const newBooking = await Booking.create(bookingData);
+        return newBooking.toObject();
+    } catch (error) {
+        console.error('Error al crear el booking en MongoDB:', error);
+        throw error;
+    }
 };
 
 export async function update(id, updateData){
-    const bookings = await getAll();
-    const bookingToUpdate = bookings.find(booking => booking.id === Number(id));
-    if (!bookingToUpdate) {
-        return null;
-    };
-    Object.assign(bookingToUpdate,updateData);
-    bookingToUpdate.id = Number(id);
-    await fs.writeFile(FILE_PATH, JSON.stringify(bookings, null, 2), 'utf-8');
-    return bookingToUpdate;
+    try {
+        const bookingToUpdate = await Booking.findByIdAndUpdate(id, updateData, { new: true , runValidators : true }).lean();
+        return bookingToUpdate || null;
+    } catch (error) {
+        console.error('Error al actualizar el booking en MongoDB:', error);
+        throw error;
+    }
 };
