@@ -1,0 +1,35 @@
+<h1>Listado de Reservas</h1>
+
+<div id="bookings-container">
+  {{#if bookings.length}}
+    {{#each bookings}}
+      <article class="booking-card" id="booking-{{_id}}">
+        <h2>Cliente: {{clientName}}</h2>
+        <p><strong>Email:</strong> {{clientEmail}}</p>
+        <p><strong>Fecha:</strong> {{date}}</p>
+        <p><strong>Hora:</strong> {{time}}</p>
+        <p><strong>Estado:</strong> {{status}}</p>
+
+        <h3>Servicios contratados:</h3>
+        {{#if services.length}}
+          <ul>
+            {{#each services}}
+              <li>
+                {{#if service.name}}
+                  {{service.name}} - Cantidad: {{quantity}} (${{service.price}})
+                {{else}}
+                  Servicio ID: {{service}} - Cantidad: {{quantity}}
+                {{/if}}
+              </li>
+            {{/each}}
+          </ul>
+        {{else}}
+          <p>Sin servicios asociados.</p>
+        {{/if}}
+      </article>
+      <hr />
+    {{/each}}
+  {{else}}
+    <p>No hay reservas registradas.</p>
+  {{/if}}
+</div>

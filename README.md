@@ -1,6 +1,6 @@
-# Pre-entrega 6 - Migration to MongoDB Atlas with Mongoose
+# Pre-entrega 7: Vistas con Handlebars y WebSockets en tiempo real
 
-The primary objective of this release is to migrate data persistence from local JSON files (`FileSystem`) to MongoDB Atlas using Mongoose as the Object Data Modeling (ODM) library. The system preserves the layered architecture (Routes → Controllers → Services → Repositories → DAOs → Models).
+This release incorporates server-side rendering using **Handlebars** and real-time, bidirectional communication with **Socket.io**. It maintains data persistence in **MongoDB Atlas** using **Mongoose** and follows a professional layered architecture (`Routes → Controllers → Services → Repositories → DAOs → Models`).
 
 ## Running the Server
 
@@ -15,6 +15,10 @@ The primary objective of this release is to migrate data persistence from local 
 1. Run with ```npm run dev```.
 
 ## Layer Responsibilities
+- **Views & Templates (`src/views/`):** Handlebars templates for server-side HTML rendering (`main.handlebars`, `services.handlebars`, `bookings.handlebars`).
+- **Static Assets (`public/`):** Client-side stylesheets (`public/css/styles.css`) and Socket.io client script (`public/js/socket.js`) for listening and reacting to live WebSocket events.
+- **Views Router (`src/routes/views.router.js`):** Routes serving HTML views, delegating logic directly to the views controller.
+- **Views Controller (`src/controllers/views.controller.js`):** Retrieves data by querying the corresponding domain services (`servicesService`, `bookingsService`) without bypassing layers, rendering templates using `res.render()`.
 - **Routes (`src/routes/`):** Define API endpoints and HTTP verbs, delegating execution directly to controllers without handling business logic.
 - **Controllers (`src/controllers/`):** Manage HTTP requests and responses. Extract inputs (`req.params`, `req.query`, `req.body`), invoke the corresponding service functions, and return standardized JSON responses (`200`, `201`, `400`, `404`, `500`).
 - **Services (`src/services/`):** Encapsulate all core business rules and data validations (verifying entity existence, checking required fields, and updating service quantities). Services are completely agnostic of Express (`req`/`res`).
@@ -40,6 +44,10 @@ The primary objective of this release is to migrate data persistence from local 
 3. createService.  Validates input and creates a new service.
 4. updateService.  Updates a service without modifying its ID.
 5. deleteService. Removes a service by its ID.
+
+## View Endpoints
+* `GET /views/services`: Renders the complete service catalog displaying all 6 mandatory attributes: Name, Description, Duration, Price, Category, and Availability.
+* `GET /views/bookings`: Renders the list of registered bookings or a conditional fallback message when no bookings exist.
 
 ## Environment variables
 

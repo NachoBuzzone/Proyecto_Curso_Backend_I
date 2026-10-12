@@ -51,6 +51,11 @@ export async function createService(req, res) {
             });
         }
 
+        const io = req.app.get('io');
+        if (io) {
+          io.emit('serviceCreated', newService);
+        }
+
         res.status(201).json({
             status:'Success',
             payload:newService
@@ -99,6 +104,11 @@ export async function deleteService(req, res) {
                 message: deleted.error
             })
         };
+        
+        const io = req.app.get('io');
+        if (io) {
+        io.emit('serviceDeleted', sid);
+        }
 
         return res.status(200).json({
             status: 'Success',
