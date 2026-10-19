@@ -1,3 +1,4 @@
+import { populate } from 'dotenv';
 import * as bookingsRepositories from '../repositories/bookings.repositories.js';
 import * as servicesRepositories from '../repositories/services.repositories.js';
 
@@ -6,7 +7,7 @@ export async function getBookings(){
 }   
 
 export async function getBookingById(id){
-    const booking = await bookingsRepositories.getById(id);
+    const booking = await bookingsRepositories.getById(id, { populate: true });
     if (!booking) {
         return { error: 'Booking not found.' };
     }

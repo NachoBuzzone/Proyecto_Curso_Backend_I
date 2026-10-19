@@ -1,7 +1,7 @@
 import * as servicesDao from '../dao/services.dao.js';
 
-export async function getAll() {
-    return servicesDao.getAll();
+export async function getAll(filters = {}, options = {}) {
+    return servicesDao.getAll(filters, options);
 };
 
 export async function getById(id) {

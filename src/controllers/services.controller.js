@@ -2,7 +2,21 @@ import * as servicesService from '../services/services.service.js';
 
 export async function getServices(req, res){
     try{
-        const payload = await servicesService.getServices(req.query);
+        
+        const { category, available, page, limit, sortBy, order } = req.query;
+        const filters = {};
+
+        if (category) filters.category = category;
+        if (available !== undefined) filters.available = available;
+        
+        const options = {};
+        if (page) options.page = page;
+        if (limit) options.limit = limit;
+        if (sortBy) options.sortBy = sortBy;
+        if (order) options.order = order;
+
+        const payload = await servicesService.getServices(filters, options);
+
         res.status(200).json({
             status:'Success',
             payload

@@ -1,9 +1,43 @@
-import Service from "../models/service.model.js"
+import Service from '../models/service.model.js'
 
-export async function getAll(){
+export async function getAll(filters = {}, options = {}){
     try{
-        const services = await Service.find().lean();
-        return services;
+      const query = {};
+
+      if (filters.category) {
+        query.category = filters.category;
+      }
+      
+      if (filters.available !== undefined) {
+        query.available = filters.available === 'true' || filters.available === true;
+      }
+    
+      const paginateOptions = {
+        page: parseInt(options.page) || 1, 
+        limit: parseInt(options.limit) || 10, 
+        sort: {}
+      };
+    
+      if (options.sortBy) {
+        const sortField = options.sortBy;
+        const sortDirection = options.order === 'desc' ? -1 : 1;
+        paginateOptions.sort = { [sortField]: sortDirection };
+      }
+
+      const result = await Service.paginate(query, paginateOptions);
+      
+      return {
+        docs: result.docs, 
+        totalDocs: result.totalDocs, 
+        limit: result.limit, 
+        totalPages: result.totalPages,
+        page: result.page,
+        pagingCounter: result.pagingCounter, 
+        hasPrevPage: result.hasPrevPage,
+        hasNextPage: result.hasNextPage, 
+        prevPage: result.prevPage,
+        nextPage: result.nextPage
+      };
     } catch (error) {
         console.error('Error al obtener servicios de MongoDB:', error);
         throw error;

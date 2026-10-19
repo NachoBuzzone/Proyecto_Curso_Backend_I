@@ -10,7 +10,7 @@ export async function getAll(){
     }
 };
 
-export async function getById(id, { populate = false } = {}) {
+export async function getById(id, { populate = true } = {}) {
     try {
         let query = Booking.findById(id);
 

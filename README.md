@@ -1,7 +1,7 @@
-# Pre-entrega 7: Vistas con Handlebars y WebSockets en tiempo real
+# Pre-entrega 8: Consultas avanzadas, validación y relaciones con populate
 
-This release incorporates server-side rendering using **Handlebars** and real-time, bidirectional communication with **Socket.io**. It maintains data persistence in **MongoDB Atlas** using **Mongoose** and follows a professional layered architecture (`Routes → Controllers → Services → Repositories → DAOs → Models`).
-
+This release includes decoupled validation using middleware, advanced queries (pagination, sorting, and filters), and management of relationships between collections using Mongoose's `populate` method. It maintains the layered architecture (`Routes → Middleware → Controllers → Services → Repositories → DAOs → Models`) and persistence in MongoDB Atlas.
+ 
 ## Running the Server
 
 ### Production / Standard start:
@@ -21,10 +21,12 @@ This release incorporates server-side rendering using **Handlebars** and real-ti
 - **Views Controller (`src/controllers/views.controller.js`):** Retrieves data by querying the corresponding domain services (`servicesService`, `bookingsService`) without bypassing layers, rendering templates using `res.render()`.
 - **Routes (`src/routes/`):** Define API endpoints and HTTP verbs, delegating execution directly to controllers without handling business logic.
 - **Controllers (`src/controllers/`):** Manage HTTP requests and responses. Extract inputs (`req.params`, `req.query`, `req.body`), invoke the corresponding service functions, and return standardized JSON responses (`200`, `201`, `400`, `404`, `500`).
-- **Services (`src/services/`):** Encapsulate all core business rules and data validations (verifying entity existence, checking required fields, and updating service quantities). Services are completely agnostic of Express (`req`/`res`).
+- **Services (`src/services/`):** Encapsulate core business rules and domain validations (verifying entity existence, handling business constraints, and managing booking service quantities). Input format and type constraints are handled upstream by validation middlewares.
 - **Repositories (`src/repositories/`):** Provide an abstraction layer over data access, exposing domain-level methods without containing business rules.
 - **DAOs (`src/dao/`):** Perform raw database operations directly against MongoDB Atlas collections using Mongoose models (`find`, `findById`, `create`, `findByIdAndUpdate`, `findByIdAndDelete`), replacing legacy FileSystem operations.
 - **Models (`src/models/`):** Define Mongoose schemas, data types, required constraints, and relationships.
+- **Middlewares (`src/middlewares/`):** These intercept HTTP requests before they reach the controllers. They perform schema validation (Zod/Joi) and return standardized responses (`400 Bad Request`) if the data is invalid, thereby avoiding the need to mix format validations into routes or controllers.
+- **Validation Schemas (`src/validations/`):** Define validation rules and types for each resource (`service.validations.js`).
 
 ## Mongoose Models
 
@@ -56,8 +58,11 @@ This release incorporates server-side rendering using **Handlebars** and real-ti
 3. MONGO_URI --> MongoDB Atlas connection string URI (including credentials, cluster address, and database name).
 
 ## Endpoints
-
-1. GET /api/services .Is used to access all services. Supports optional query parameters for filtering (category or available).
+1. `GET /api/services` -Is used to access all services. Supports optional query parameters for filtering:
+   - `limit` (default: 10)
+   - `page` (default: 1)
+   - `sort` (`asc` | `desc` for price)
+   - `query` (filter `category` o `available`)
 2. GET /api/services/:sid .Is used to get the service with a specific ID.
 3. POST /api/services .Is used to add a service.
 4. PUT /api/services/:sid .Is used to update a service.
@@ -69,8 +74,28 @@ This release incorporates server-side rendering using **Handlebars** and real-ti
 
 ## Architectural Notes
 * **`bookings.service.js`:** Enforces domain logic. Validates that both the booking and service exist (querying repository methods) and increments the service quantity if it is already present in the booking. ID comparisons are handled as strings to maintain compatibility with `ObjectId`.
-* **`services.service.js`:** Enforces numeric validation for price and duration, delegates unique ID generation to MongoDB (`_id`), and applies query filters (`category`, `available`).
-* **Repositories & DAOs:** Handle persistence exclusively on MongoDB Atlas collections (`services` and `bookings`) using Mongoose queries and `.lean()` for performance.
+* **`services.service.js`:** Orchestrates business operations and interacts with the repository layer. Since input data and types are already sanitized and verified by the validation middleware, the service focuses solely on domain logic and query handling.
+* **`Repositories & DAOs:`** Handle persistence exclusively on MongoDB Atlas collections (`services` and `bookings`) using Mongoose queries and `.lean()` for performance.
+* **`Data Validation`:** Type and required-field validations are delegated to dedicated schemas and middleware, freeing the service layer from manual format checks and preventing the persistence of inconsistent data.
+* **`Mongoose Populate`:** For bookings (`bookings`), only the `ObjectId` of the referenced service is persisted. The full service data (`name`, `price`, etc.) is populated only in read queries (`GET`) using `.populate(“services.service”)`.
+* **`Advanced Queries & Pagination`:** `GET /api/services` supports query parameters (`limit`, `page`, `sort`, `query`) for pagination and dynamic filtering.
+
+## Validation Error Response (400 Bad Request)
+
+When data sent via `POST` or `PUT` does not conform to the schema:
+
+```json
+{
+  "status": "error",
+  "message": "invalid data",
+  "error": [
+    {
+      "field": "price",
+      "message": "Invalid input: expected number, received undefined"
+    }
+  ]
+}
+```
 
 ## Example to create a booking
 
