@@ -2,7 +2,7 @@ import Booking from "../models/booking.model.js"
 
 export async function getAll(){
     try{
-        const bookings = await Booking.find().lean();
+        const bookings = await Booking.find().populate("services.service").lean();
         return bookings;
     } catch (error) {
         console.error('Error al obtener bookings de MongoDB:', error);
@@ -10,14 +10,9 @@ export async function getAll(){
     }
 };
 
-export async function getById(id, { populate = true } = {}) {
+export async function getById(id) {
     try {
-        let query = Booking.findById(id);
-
-        if (populate){
-            query = query.populate("services.service")
-        }
-        const booking = await query.lean();
+        const booking = await Booking.findById(id).populate("services.service").lean();
         return booking || null;
     } catch (error) {
         console.error('Error al buscar un booking por ID en MongoDB:', error);

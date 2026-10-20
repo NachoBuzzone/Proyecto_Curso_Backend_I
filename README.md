@@ -1,7 +1,7 @@
-# Pre-entrega 8: Consultas avanzadas, validación y relaciones con populate
+# Entrega Final: Sistema Completo de Gestión de Turnos con Capas, MongoDB, Zod, Handlebars y Socket.io
 
-This release includes decoupled validation using middleware, advanced queries (pagination, sorting, and filters), and management of relationships between collections using Mongoose's `populate` method. It maintains the layered architecture (`Routes → Middleware → Controllers → Services → Repositories → DAOs → Models`) and persistence in MongoDB Atlas.
- 
+The goal of this release is to consolidate everything we've worked on throughout the course into a complete backend API that manages services and reservations, featuring a layered architecture, advanced queries, views, and real-time functionality.
+
 ## Running the Server
 
 ### Production / Standard start:
@@ -26,7 +26,7 @@ This release includes decoupled validation using middleware, advanced queries (p
 - **DAOs (`src/dao/`):** Perform raw database operations directly against MongoDB Atlas collections using Mongoose models (`find`, `findById`, `create`, `findByIdAndUpdate`, `findByIdAndDelete`), replacing legacy FileSystem operations.
 - **Models (`src/models/`):** Define Mongoose schemas, data types, required constraints, and relationships.
 - **Middlewares (`src/middlewares/`):** These intercept HTTP requests before they reach the controllers. They perform schema validation (Zod/Joi) and return standardized responses (`400 Bad Request`) if the data is invalid, thereby avoiding the need to mix format validations into routes or controllers.
-- **Validation Schemas (`src/validations/`):** Define validation rules and types for each resource (`service.validations.js`).
+- **Validation Schemas (`src/validations/`):** Define validation rules and types for each resource (`service.validations.js`, `booking.validations.js`).
 
 ## Mongoose Models
 
@@ -46,6 +46,10 @@ This release includes decoupled validation using middleware, advanced queries (p
 3. createService.  Validates input and creates a new service.
 4. updateService.  Updates a service without modifying its ID.
 5. deleteService. Removes a service by its ID.
+
+## Real-Time Events (Socket.io)
+- **Connection (`connection`):** Emitted when a client connects to the WebSocket server.
+- **Service/Booking updates:** Broadcasts updates to connected clients to refresh views dynamically without page reload.
 
 ## View Endpoints
 * `GET /views/services`: Renders the complete service catalog displaying all 6 mandatory attributes: Name, Description, Duration, Price, Category, and Availability.
@@ -106,8 +110,8 @@ Request body:
 {
   "clientName": "Martin",
   "clientEmail": "Martin@gmail.com",
-  "date": "10-10-2026",
-  "time": "20 minutos",
+  "date": "2026-10-10",
+  "time": "14:30",
   "status": "pending",
   "services": [
     {

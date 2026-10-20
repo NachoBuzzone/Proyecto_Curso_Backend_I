@@ -15,21 +15,7 @@ export async function getBookingById(id){
 }
 
 export async function createBooking(bookingData){
-    const { clientName, clientEmail, date, time, status, services } = bookingData;
-
-    if ( !clientName || !clientEmail || !date || !time ){
-        return { error: 'The booking you want to add is incomplete.' }
-    };
-
-    const newBooking = {
-        clientName,
-        clientEmail,
-        date,
-        time,
-        status,
-        services: Array.isArray(services) ? services : []
-    };
-    return bookingsRepositories.create(newBooking);
+    return bookingsRepositories.create(bookingData);
 }
 
 export async function addServiceToBooking(bid, sid){
